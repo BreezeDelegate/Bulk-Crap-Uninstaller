@@ -143,6 +143,14 @@ namespace Klocman.Tools
             if (string.IsNullOrEmpty(fullCommand))
                 throw new ArgumentException(Localisation.Error_SeparateArgsFromCommand_Empty, nameof(fullCommand));
 
+            var firstArgumentSpace = fullCommand.IndexOf(' ');
+            if (firstArgumentSpace > 0 && fullCommand[0] != '"')
+            {
+                var executableName = fullCommand.Substring(0, firstArgumentSpace);
+                if (!executableName.Contains('\\') && !executableName.Contains('/') && !executableName.Contains(':'))
+                    return new ProcessStartCommand(executableName, fullCommand.Substring(firstArgumentSpace + 1));
+            }
+
             var firstDot = fullCommand.IndexOf('.');
             if (firstDot < 0)
                 return SeparateNonDottedCommand(fullCommand);

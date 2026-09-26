@@ -20,6 +20,7 @@ namespace BulkCrapUninstallerTests
         [TestMethod]
         [DataRow("cmd /c echo hello", "cmd", "/c echo hello")]
         [DataRow("msiexec.exe /x {12345678-1234-1234-1234-123456789ABC}", "msiexec.exe", "/x {12345678-1234-1234-1234-123456789ABC}")]
+        [DataRow("My Uninstaller.exe /S", "My Uninstaller.exe", "/S")]
         [DataRow(@"C:\Program Files\Example\uninstall.exe /S", @"C:\Program Files\Example\uninstall.exe", "/S")]
         [DataRow("\"C:\\Program Files\\Example\\uninstall.exe\" /S", @"C:\Program Files\Example\uninstall.exe", "/S")]
         public void SeparateArgsFromCommand_PreservesExistingCommandShapes(string command, string expectedFileName, string expectedArguments)

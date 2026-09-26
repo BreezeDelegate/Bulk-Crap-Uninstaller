@@ -116,9 +116,18 @@ namespace UninstallTools.Junk.Confidence
             if (createdJunk.Count == 0) return;
 
             var thisDisplayName = thisUninstaller.DisplayNameTrimmed;
+            var otherEntries = otherUninstallers.Where(x => x != thisUninstaller).ToList();
+
+            // If another installed entry has the same product name, a product-named junk node can be shared between versions.
+            // Keep it below the default Good-or-better selection threshold.
+            if (otherEntries.Any(x => string.Equals(x.DisplayNameTrimmed, thisDisplayName, StringComparison.OrdinalIgnoreCase)))
+            {
+                foreach (var sharedJunk in createdJunk.Where(x => string.Equals(x.Value, thisDisplayName, StringComparison.OrdinalIgnoreCase)))
+                    sharedJunk.Key.Confidence.Add(ConfidenceRecords.SameProductNameStillInstalled);
+            }
 
             // Check if any of the other apps match any of the entries, as long as the app names don't contain this app's name
-            var otherFiltered = otherUninstallers.Where(x => x != thisUninstaller && !x.DisplayNameTrimmed.Contains(thisDisplayName)).ToList();
+            var otherFiltered = otherEntries.Where(x => !x.DisplayNameTrimmed.Contains(thisDisplayName)).ToList();
             var matchingWithOther = createdJunk.Where(x => otherFiltered.Any(y => y.DisplayNameTrimmed.Contains(x.Value)));
 
             if (createdJunk.Count >= 2)

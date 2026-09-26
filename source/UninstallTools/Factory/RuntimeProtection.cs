@@ -1,3 +1,8 @@
+/*
+    Copyright (c) 2026 Marcin Szeniak (https://github.com/Klocman/)
+    Apache License Version 2.0
+*/
+
 using System;
 using System.Runtime.InteropServices;
 
@@ -27,13 +32,14 @@ namespace UninstallTools.Factory
             {
                 var normalizedPath = depsFile.Replace('\\', '/');
                 const string sharedMarker = "/shared/";
-                var sharedIndex = normalizedPath.IndexOf(sharedMarker, StringComparison.OrdinalIgnoreCase);
+                var sharedIndex = normalizedPath.LastIndexOf(sharedMarker, StringComparison.OrdinalIgnoreCase);
                 if (sharedIndex < 0)
                     continue;
 
                 var frameworkPath = normalizedPath.Substring(sharedIndex + sharedMarker.Length);
                 var parts = frameworkPath.Split('/');
-                if (parts.Length < 2)
+                if (parts.Length != 3 || !parts[2].Equals(
+                        $"{parts[0]}.deps.json", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 var runtimeName = parts[0] switch

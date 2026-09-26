@@ -30,6 +30,26 @@ namespace BulkCrapUninstallerTests
         }
 
         [TestMethod]
+        public void SharedFrameworkUnderRootContainingSharedSegmentIsProtected()
+        {
+            const string depsFiles =
+                @"C:\shared\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.30\Microsoft.WindowsDesktop.App.deps.json";
+
+            Assert.IsTrue(RuntimeProtection.IsLoadedRuntime(
+                "Microsoft Windows Desktop Runtime - 8.0.30 (x64)", depsFiles, Architecture.X64));
+        }
+
+        [TestMethod]
+        public void AppDepsPathThatResemblesSharedFrameworkIsNotProtected()
+        {
+            const string depsFiles =
+                @"C:\apps\shared\Microsoft.WindowsDesktop.App\8.0.30\BCUninstaller.deps.json";
+
+            Assert.IsFalse(RuntimeProtection.IsLoadedRuntime(
+                "Microsoft Windows Desktop Runtime - 8.0.30 (x64)", depsFiles, Architecture.X64));
+        }
+
+        [TestMethod]
         [DataRow("Microsoft Windows Desktop Runtime - 8.0.29 (x64)", FrameworkDependentDeps, Architecture.X64)]
         [DataRow("Microsoft Windows Desktop Runtime - 8.0.30 (x86)", FrameworkDependentDeps, Architecture.X64)]
         [DataRow("Microsoft ASP.NET Core 8.0.30 - Shared Framework (x64)", FrameworkDependentDeps, Architecture.X64)]

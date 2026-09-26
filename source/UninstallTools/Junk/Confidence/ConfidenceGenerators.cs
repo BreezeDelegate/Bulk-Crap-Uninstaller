@@ -117,12 +117,17 @@ namespace UninstallTools.Junk.Confidence
 
             var thisDisplayName = thisUninstaller.DisplayNameTrimmed;
             var otherEntries = otherUninstallers.Where(x => x != thisUninstaller).ToList();
+            var sameProductEntries = otherEntries
+                .Where(x => string.Equals(x.DisplayNameTrimmed, thisDisplayName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-            // If another installed entry has the same product name, a product-named junk node can be shared between versions.
-            // Keep it below the default Good-or-better selection threshold.
-            if (otherEntries.Any(x => string.Equals(x.DisplayNameTrimmed, thisDisplayName, StringComparison.OrdinalIgnoreCase)))
+            // Same-name versions can share product- or publisher-named settings and registry keys.
+            // Keep those heuristic matches below the default Good-or-better selection threshold.
+            if (sameProductEntries.Count > 0)
             {
-                foreach (var sharedJunk in createdJunk.Where(x => string.Equals(x.Value, thisDisplayName, StringComparison.OrdinalIgnoreCase)))
+                foreach (var sharedJunk in createdJunk.Where(x => sameProductEntries.Any(y =>
+                             string.Equals(x.Value, y.DisplayNameTrimmed, StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(x.Value, y.PublisherTrimmed, StringComparison.OrdinalIgnoreCase))))
                     sharedJunk.Key.Confidence.Add(ConfidenceRecords.SameProductNameStillInstalled);
             }
 

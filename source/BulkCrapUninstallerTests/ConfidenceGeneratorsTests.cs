@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UninstallTools;
@@ -26,6 +27,39 @@ namespace BulkCrapUninstallerTests
                 $"Shared settings remained {junk.Confidence.GetConfidence()} (raw {junk.Confidence.GetRawConfidence()})");
         }
 
+        [TestMethod]
+        public void SameProductVersionStillInstalled_DemotesSharedPublisherJunkBelowGood()
+        {
+            var target = CreateBlenderEntry("Blender 4.4");
+            var stillInstalled = CreateBlenderEntry("Blender 4.2");
+            var junk = CreateBlenderPublisherJunk(target);
+
+            ConfidenceGenerators.TestForSimilarNames(
+                target,
+                new[] { stillInstalled },
+                new List<KeyValuePair<JunkResultBase, string>> { new(junk, "Blender Foundation") });
+
+            Assert.IsTrue(
+                junk.Confidence.GetConfidence() < ConfidenceLevel.Good,
+                $"Shared publisher settings remained {junk.Confidence.GetConfidence()} (raw {junk.Confidence.GetRawConfidence()})");
+        }
+
+        [TestMethod]
+        public void SameProductVersionStillInstalled_DoesNotDemoteVersionSpecificJunk()
+        {
+            var target = CreateBlenderEntry("Blender 4.4");
+            var stillInstalled = CreateBlenderEntry("Blender 4.2");
+            var junk = CreateBlenderVersionJunk(target);
+            var initialConfidence = junk.Confidence.GetConfidence();
+
+            ConfidenceGenerators.TestForSimilarNames(
+                target,
+                new[] { stillInstalled },
+                new List<KeyValuePair<JunkResultBase, string>> { new(junk, "Blender 4.4") });
+
+            Assert.AreEqual(initialConfidence, junk.Confidence.GetConfidence());
+            Assert.AreEqual(ConfidenceLevel.Good, junk.Confidence.GetConfidence());
+        }
 
         [TestMethod]
         public void NoSameProductRemains_DoesNotDemoteOwnedJunk()
@@ -36,7 +70,7 @@ namespace BulkCrapUninstallerTests
 
             ConfidenceGenerators.TestForSimilarNames(
                 target,
-                new ApplicationUninstallerEntry[0],
+                Array.Empty<ApplicationUninstallerEntry>(),
                 new List<KeyValuePair<JunkResultBase, string>> { new(junk, "Blender") });
 
             Assert.AreEqual(initialConfidence, junk.Confidence.GetConfidence());
@@ -78,6 +112,29 @@ namespace BulkCrapUninstallerTests
             var junk = new TestJunkResult(target);
             junk.Confidence.AddRange(ConfidenceGenerators.GenerateConfidence(
                 "Blender",
+                @"C:\Users\test\AppData\Roaming\Blender Foundation",
+                1,
+                target));
+            return junk;
+        }
+
+        private static TestJunkResult CreateBlenderPublisherJunk(ApplicationUninstallerEntry target)
+        {
+            var junk = new TestJunkResult(target);
+            junk.Confidence.AddRange(ConfidenceGenerators.GenerateConfidence(
+                "Blender Foundation",
+                @"C:\Users\test\AppData\Roaming",
+                0,
+                target));
+            junk.Confidence.Add(ConfidenceRecords.AllSubdirsMatched);
+            return junk;
+        }
+
+        private static TestJunkResult CreateBlenderVersionJunk(ApplicationUninstallerEntry target)
+        {
+            var junk = new TestJunkResult(target);
+            junk.Confidence.AddRange(ConfidenceGenerators.GenerateConfidence(
+                "Blender 4.4",
                 @"C:\Users\test\AppData\Roaming\Blender Foundation",
                 1,
                 target));

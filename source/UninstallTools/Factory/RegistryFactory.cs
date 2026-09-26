@@ -259,6 +259,8 @@ namespace UninstallTools.Factory
         private static bool GetProtectedFlag(RegistryKey uninstallerKey)
         {
             return Convert.ToInt32(uninstallerKey.GetValue("NoRemove", 0)) != 0 ||
+                   string.Equals(uninstallerKey.GetStringSafe(RegistryNamePublisher), "Microsoft Corporation",
+                       StringComparison.OrdinalIgnoreCase) &&
                    RuntimeProtection.IsLoadedRuntime(uninstallerKey.GetStringSafe(RegistryNameDisplayName));
         }
 

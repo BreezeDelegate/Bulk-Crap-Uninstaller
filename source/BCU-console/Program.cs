@@ -355,7 +355,7 @@ Return codes:
                 Console.WriteLine($"Starting junk cleanup with a minimum confidence level of {junkConfidenceLevel}");
                 if (isDryRun)
                     Console.WriteLine(@"Note: The applications are still installed, so results may differ from the actual cleanup performed after they are uninstalled.");
-                var remainingApps = isDryRun ? allApps : allApps.Where(x => x.RegKeyStillExists()).ToList();
+                var remainingApps = isDryRun ? allApps : QueryApps(isQuiet, isUnattended, isVerbose);
 
                 List<IJunkResult> remainingJunk = JunkManager.FindJunk(apps, remainingApps, _ => { })
                     .Where(j => j.Confidence.GetConfidence() >= junkConfidenceLevel)

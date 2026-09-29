@@ -52,6 +52,32 @@ namespace BulkCrapUninstallerTests
         }
 
         [TestMethod]
+        public void SameProductVersionStillInstalled_DemotesExplicitRegistryConnectionWithDifferentPublisherBelowGood()
+        {
+            var target = CreateBlenderEntry("Blender 4.4");
+            target.Publisher = "Open Source Studio";
+            target.InstallLocation = @"C:\Program Files\Blender Foundation\Blender 4.4";
+            var stillInstalled = CreateBlenderEntry("Blender 4.2");
+            stillInstalled.Publisher = "Open Source Studio";
+            var junk = new TestJunkResult(target);
+            junk.Confidence.AddRange(ConfidenceGenerators.GenerateConfidence(
+                "Blender",
+                @"C:\Users\test\AppData\Roaming\Open Source Studio",
+                1,
+                target));
+            junk.Confidence.Add(ConfidenceRecords.ExplicitConnection);
+
+            ConfidenceGenerators.TestForSimilarNames(
+                target,
+                new[] { stillInstalled },
+                new List<KeyValuePair<JunkResultBase, string>> { new(junk, "Blender") });
+
+            Assert.IsTrue(
+                junk.Confidence.GetConfidence() < ConfidenceLevel.Good,
+                $"Explicit shared registry key remained {junk.Confidence.GetConfidence()} (raw {junk.Confidence.GetRawConfidence()})");
+        }
+
+        [TestMethod]
         public void SameProductVersionStillInstalled_DemotesSharedPublisherJunkBelowGood()
         {
             var target = CreateBlenderEntry("Blender 4.4");

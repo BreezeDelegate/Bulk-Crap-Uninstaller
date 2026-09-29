@@ -128,7 +128,12 @@ namespace UninstallTools.Junk.Confidence
                 foreach (var sharedJunk in createdJunk.Where(x => sameProductEntries.Any(y =>
                              string.Equals(x.Value, y.DisplayNameTrimmed, StringComparison.OrdinalIgnoreCase) ||
                              string.Equals(x.Value, y.PublisherTrimmed, StringComparison.OrdinalIgnoreCase))))
-                    sharedJunk.Key.Confidence.Add(ConfidenceRecords.SameProductNameStillInstalled);
+                {
+                    var adjustment = Math.Min(ConfidenceRecords.SameProductNameStillInstalled.Change,
+                        1 - sharedJunk.Key.Confidence.GetRawConfidence());
+                    sharedJunk.Key.Confidence.Add(new ConfidenceRecord(adjustment,
+                        ConfidenceRecords.SameProductNameStillInstalled.Reason));
+                }
             }
 
             // Check if any of the other apps match any of the entries, as long as the app names don't contain this app's name
